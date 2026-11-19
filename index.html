@@ -144,21 +144,52 @@ p{margin:0;text-wrap:pretty}
 :root[data-theme="dark"] .lg-hs{background:#fff;padding:6px 10px;border-radius:8px;box-sizing:content-box}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lg-hs{background:#fff;padding:6px 10px;border-radius:8px;box-sizing:content-box}}
 /* dusk */
-.dusk{background:#0E1330;color:#fff;position:relative;overflow:hidden;padding-top:96px}
+.dusk{background:#16040A;color:#fff;position:relative;overflow:hidden;padding-top:96px}
 .dusk .kicker{color:#FFB4BF}
 .dusk .sub{color:rgba(255,255,255,.78)}
 .dusk-copy{position:relative;z-index:1}
 .dusk-count{margin-top:26px;display:flex;align-items:baseline;gap:10px;color:rgba(255,255,255,.8)}
-.dusk-count b{font-family:var(--display);font-weight:800;font-size:56px;letter-spacing:-.04em;color:#FFD27A;font-variant-numeric:tabular-nums;min-width:2.2ch}
+.dusk-count b{font-family:var(--display);font-weight:800;font-size:56px;letter-spacing:-.04em;color:#FFFFFF;font-variant-numeric:tabular-nums;min-width:2.2ch}
 #dusk-scene{margin-top:-60px}
 #dusk-scene svg{width:100%;height:auto;min-height:340px;display:block}
-.dusk-note{font-size:13.5px;color:rgba(255,255,255,.55);padding-top:14px;padding-bottom:22px;background:#0B0D22;max-width:none;text-align:right}
-.win{fill:#3A3160;transition:fill .6s ease}
-.win.on{fill:#FFD27A;filter:url(#wglow)}
+.dusk-note{font-size:13.5px;color:rgba(255,255,255,.55);padding-top:14px;padding-bottom:22px;background:#120307;max-width:none;text-align:right}
+.win{fill:#4A1222;transition:fill .6s ease}
+#dusk-scene .ly{transition:transform .2s linear;will-change:transform}
+.sunset{transition:opacity 5s ease .3s}
+svg.go .sunset{opacity:0}
+.ly-stars{opacity:.15;transition:opacity 4s ease 1.6s}
+svg.go .ly-stars{opacity:1}
+.flood{opacity:0;transition:opacity 2.8s ease 1.2s}
+.refl{opacity:0;transition:opacity 3s ease 1.6s}
+svg.go .refl{opacity:.38;animation:refl 5s ease-in-out 5s infinite}
+@keyframes refl{0%,100%{opacity:.38}50%{opacity:.26}}
+svg.go .flood{opacity:1}
+.halo{opacity:0;transition:opacity 3.5s ease 1.4s}
+svg.go .halo{opacity:1;animation:halo 6s ease-in-out 5s infinite}
+@keyframes halo{0%,100%{opacity:1}50%{opacity:.7}}
+.lantern-glow{opacity:0}
+svg.go .lantern-glow{animation:glow 3.2s ease-in-out 2.4s infinite}
+@keyframes glow{0%,100%{opacity:.5}50%{opacity:1}}
+.portal{fill:#1A0509;transition:fill 1.6s ease 2s}
+svg.go .portal{fill:#FFF3EA;filter:url(#wglow)}
+.win[data-bell]{fill:#4A1222}
+.walker{opacity:0}
+svg.go .walker{animation-name:walk;animation-timing-function:linear;animation-iteration-count:infinite}
+@keyframes walk{0%{transform:translateX(var(--from));opacity:0}8%{opacity:1}86%{opacity:1}100%{transform:translateX(var(--to));opacity:0}}
+.walker-body{animation:bob .45s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-1.2px)}}
+.lantern{fill:#FFF3EA;filter:url(#wglow)}
+.mist{animation:mist 22s ease-in-out infinite alternate;opacity:.9}
+@keyframes mist{to{transform:translateX(160px)}}
+.shoot{opacity:0}
+svg.go .shoot{animation:shoot 9s ease-in 6s infinite}
+@keyframes shoot{0%{opacity:0;transform:translate(260px,40px) rotate(14deg)}2%{opacity:1}7%{opacity:0;transform:translate(560px,115px) rotate(14deg)}100%{opacity:0;transform:translate(560px,115px) rotate(14deg)}}
+@media (prefers-reduced-motion:reduce){.sunset{opacity:0}.flood,.halo{opacity:1}}
+.win.on{fill:#FFF3EA;filter:url(#wglow)}
 .star{fill:#fff;animation:twinkle 4s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.9}50%{opacity:.25}}
-.lamp{fill:#FFD27A;filter:url(#wglow)}
-.ripple{fill:#FFD27A;opacity:.25;animation:ripple 4s ease-in-out infinite}
+.lamp{fill:#FFF3EA;filter:url(#wglow)}
+.ripple{fill:#FFD6DC;opacity:.25;animation:ripple 4s ease-in-out infinite}
 @keyframes ripple{0%,100%{opacity:.08;transform:translateX(0)}50%{opacity:.35;transform:translateX(6px)}}
 @media (max-width:760px){.dusk{padding-top:64px}#dusk-scene{margin-top:0}.dusk-count b{font-size:44px}}
 .dialw{width:100%}
@@ -1287,59 +1318,132 @@ function sparks(host){
 
 /* ================= Fulda at dusk ================= */
 function rng(seed){ return () => (seed = (seed*16807) % 2147483647, (seed-1)/2147483646); }
+const DOM_X = 720, DOM_Y = 330;
 function duskScene(){
-  const R = rng(11), W = 1440, H = 600; const wins = []; let s = '';
-  const win = (x,y,w,h,arch) => { wins.push(1); return arch ? `<path class="win" d="M${x} ${y+h}V${y+w/2}a${w/2} ${w/2} 0 0 1 ${w} 0V${y+h}Z"/>` : `<rect class="win" x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5"/>`; };
+  const R = rng(11), W = 1440, H = 600;
+  const win = (x,y,w,h,arch,extra='') => arch
+    ? `<path class="win"${extra} data-x="${x}" data-y="${y}" d="M${x} ${y+h}V${y+w/2}a${w/2} ${w/2} 0 0 1 ${w} 0V${y+h}Z"/>`
+    : `<rect class="win"${extra} data-x="${x}" data-y="${y}" x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5"/>`;
   // stars + moon
-  for(let i=0;i<90;i++){ const x=R()*W, y=R()*300, rr=.5+R()*1.4; s += `<circle class="star" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(2)}" style="animation-delay:${(-R()*5).toFixed(2)}s"/>`; }
-  s += `<circle cx="1190" cy="112" r="30" fill="#FFE9C4"/><circle cx="1203" cy="102" r="28" fill="#15183C"/>`;
-  // far hills
-  s += `<path d="M0 392C160 350 300 372 470 356S760 330 920 352 1250 340 1440 362V600H0Z" fill="#2A2350"/>`;
+  let stars = '';
+  for(let i=0;i<110;i++){ const x=R()*W, y=R()*300, rr=.5+R()*1.4; stars += `<circle class="star" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(2)}" style="animation-delay:${(-R()*5).toFixed(2)}s"/>`; }
+  stars += `<g class="moon"><circle cx="1190" cy="112" r="30" fill="#FFF3EA" mask="url(#moonm)"/></g>`;
+  const hills = `<path d="M0 392C160 350 300 372 470 356S760 330 920 352 1250 340 1440 362V600H0Z" fill="#3B0A16"/>`;
   // back row
-  let x = -10;
+  let back = '', x = -10;
   while(x < W){ const w = 46+R()*50, h = 70+R()*90, y = 440-h;
     if(x > 520 && x < 920){ x += w; continue; }
-    s += `<path d="M${x} 440V${y}l${w/2} ${-18-R()*14} ${w/2} ${18+R()*14}V440Z" fill="#251E44"/>`;
-    for(let r2=y+18; r2<425; r2+=26) for(let c=x+8; c<x+w-14; c+=18) if(R()>.35) s += win(c, r2, 9, 13);
+    back += `<path d="M${x} 440V${y}l${w/2} ${-18-R()*14} ${w/2} ${18+R()*14}V440Z" fill="#300913"/>`;
+    for(let r2=y+18; r2<425; r2+=26) for(let c=x+8; c<x+w-14; c+=18) if(R()>.35) back += win(c, r2, 9, 13);
     x += w + 2; }
-  // the cathedral (St. Salvator), seen from the Domplatz
-  const D = '#2C2450';
-  s += `<g fill="${D}">
-    <rect x="688" y="214" width="64" height="80"/><path d="M676 216a44 40 0 0 1 88 0Z"/><rect x="713" y="150" width="14" height="30"/><path d="M710 152a10 10 0 0 1 20 0Z"/><rect x="718" y="128" width="4" height="24"/><rect x="712" y="134" width="16" height="4"/>
-    <path d="M630 440V300l90-40 90 40v140Z"/>
-    <rect x="590" y="236" width="52" height="204"/><path d="M584 240c4-28 18-40 32-50 14 10 28 22 32 50Z"/><path d="M604 194c0-14 12-22 12-34 0 12 12 20 12 34Z"/><rect x="614" y="132" width="4" height="30"/><rect x="608" y="140" width="16" height="4"/>
-    <rect x="798" y="236" width="52" height="204"/><path d="M792 240c4-28 18-40 32-50 14 10 28 22 32 50Z"/><path d="M812 194c0-14 12-22 12-34 0 12 12 20 12 34Z"/><rect x="822" y="132" width="4" height="30"/><rect x="816" y="140" width="16" height="4"/>
-  </g>`;
-  s += win(698,232,12,26,true)+win(714,232,12,26,true)+win(730,232,12,26,true);
-  s += win(604,262,24,34,true)+win(812,262,24,34,true)+win(604,330,24,34,true)+win(812,330,24,34,true);
-  s += win(662,316,18,40,true)+win(711,300,18,52,true)+win(760,316,18,40,true);
-  s += `<path d="M702 440v-46a18 18 0 0 1 36 0v46Z" fill="#1A1430"/>`;
+
+  // ---- the cathedral of St. Salvator, Fulda: baroque twin towers, dome behind ----
+  const tower = cx => `
+    <rect x="${cx-30}" y="232" width="60" height="208"/>
+    <rect x="${cx-34}" y="326" width="68" height="7"/><rect x="${cx-34}" y="268" width="68" height="6"/><rect x="${cx-36}" y="228" width="72" height="7"/>
+    <path d="M${cx-34} 229C${cx-32} 204 ${cx-16} 194 ${cx} 186C${cx+16} 194 ${cx+32} 204 ${cx+34} 229Z"/>
+    <rect x="${cx-7}" y="166" width="14" height="22"/><path d="M${cx-11} 168C${cx-10} 156 ${cx} 150 ${cx} 144C${cx} 150 ${cx+10} 156 ${cx+11} 168Z"/>
+    <circle cx="${cx}" cy="141" r="4"/><rect x="${cx-1.3}" y="118" width="2.6" height="22"/><rect x="${cx-6}" y="124" width="12" height="2.6"/>`;
+  const domShape = `
+    <rect x="684" y="196" width="72" height="66"/><rect x="680" y="192" width="80" height="6"/>
+    <path d="M676 196C676 150 764 150 764 196Z"/>
+    <rect x="710" y="134" width="20" height="24"/><path d="M706 136C708 124 716 120 720 116C724 120 732 124 734 136Z"/>
+    <circle cx="720" cy="112" r="4"/><rect x="718.7" y="88" width="2.6" height="22"/><rect x="714" y="94" width="12" height="2.6"/>
+    ${tower(616)}${tower(824)}
+    <path d="M646 440V300h148v140Z"/><rect x="642" y="296" width="156" height="7"/>
+    <path d="M668 300V262h104v38Z"/><path d="M668 300c-14 0-18-14-6-20l6 2Z"/><path d="M772 300c14 0 18-14 6-20l-6 2Z"/>
+    <path d="M660 264L720 230L780 264Z"/>
+    <rect x="717" y="214" width="6" height="16"/><circle cx="720" cy="211" r="3.4"/>
+    <rect x="686" y="440" width="68" height="4"/><rect x="680" y="444" width="80" height="4"/>`;
+  const domDetail = `<g fill="#57142A">
+    <rect x="652" y="303" width="5" height="137"/><rect x="676" y="303" width="5" height="137"/><rect x="759" y="303" width="5" height="137"/><rect x="783" y="303" width="5" height="137"/>
+    <rect x="674" y="266" width="4" height="30"/><rect x="762" y="266" width="4" height="30"/>
+    <path d="M684 182C690 168 700 162 712 160" stroke="#57142A" stroke-width="2" fill="none"/><path d="M756 182C750 168 740 162 728 160" stroke="#57142A" stroke-width="2" fill="none"/>
+    <path d="M720 196V158" stroke="#57142A" stroke-width="2" fill="none"/></g>`;
+  let domWins = '';
+  [692,708,724,740].forEach(wx => domWins += win(wx, 212, 9, 22, true));
+  [602,818].forEach(tx => { domWins += win(tx, 240, 14, 24, true, ' data-bell="1"') + win(tx, 284, 14, 34, true) + win(tx, 346, 14, 36, true) + win(tx, 396, 14, 30, true); });
+  domWins += `<circle class="win" data-x="720" data-y="250" cx="720" cy="250" r="7"/>`;
+  domWins += win(688, 270, 12, 24, true) + win(740, 270, 12, 24, true) + win(711, 268, 18, 28, true);
+  domWins += win(660, 316, 12, 34, true) + win(768, 316, 12, 34, true) + win(690, 316, 12, 30, true) + win(738, 316, 12, 30, true);
+  domWins += `<path class="portal" d="M702 440v-40a18 18 0 0 1 36 0v40Z"/>`;
+
   // front row, both sides of the square
-  x = -20;
+  let front = ''; x = -20;
   while(x < W){ const w = 70+R()*60, h = 90+R()*70, y = 490-h;
     if(x > 470 && x < 900){ x = 900; continue; }
     const roof = R()>.5 ? `l${w/2} ${-26-R()*12} ${w/2} ${26+R()*12}` : `h${w}`;
-    s += `<path d="M${x} 490V${y}${roof}V490Z" fill="#1B1534"/>`;
-    for(let r2=y+16; r2<470; r2+=30) for(let c=x+12; c<x+w-20; c+=22) if(R()>.25) s += win(c, r2, 12, 17);
+    front += `<path d="M${x} 490V${y}${roof}V490Z" fill="#22060D"/>`;
+    for(let r2=y+16; r2<470; r2+=30) for(let c=x+12; c<x+w-20; c+=22) if(R()>.25) front += win(c, r2, 12, 17);
     x += w + 3; }
-  // lamps on the square
-  [520,600,840,920].forEach(lx => s += `<rect x="${lx}" y="452" width="3" height="38" fill="#1B1534"/><circle class="lamp" cx="${lx+1.5}" cy="450" r="5"/>`);
-  // river with reflections
-  s += `<rect x="0" y="490" width="${W}" height="110" fill="url(#river)"/>`;
-  for(let i=0;i<46;i++){ const rx = R()*W, ry = 500+R()*90, rw = 14+R()*40; s += `<rect class="ripple" x="${rx.toFixed(0)}" y="${ry.toFixed(0)}" width="${rw.toFixed(0)}" height="2" rx="1" style="animation-delay:${(-R()*4).toFixed(2)}s"/>`; }
-  return {count: wins.length, svg: `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Fulda am Abend, Illustration">
-    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E1330"/><stop offset=".5" stop-color="#252250"/><stop offset=".78" stop-color="#5A2D58"/><stop offset="1" stop-color="#A3405A"/></linearGradient>
-    <linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A1840"/><stop offset="1" stop-color="#0B0D22"/></linearGradient>
-    <filter id="wglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    <rect width="${W}" height="${H}" fill="url(#sky)"/>${s}</svg>`};
+  // the square: lamps and people walking to the cathedral
+  let square = `<rect x="470" y="440" width="430" height="50" fill="#2A0811"/>`;
+  [520,600,840,920].forEach(lx => square += `<rect x="${lx}" y="452" width="3" height="38" fill="#160409"/><circle class="lamp" cx="${lx+1.5}" cy="450" r="5"/>`);
+  const person = (lantern) => `<g class="walker-body"><circle cx="0" cy="-15" r="3"/><path d="M-3.5 -11h7l1.5 9h-2.5l-1 9h-3l-1-9h-2.5Z"/>${lantern?'<circle class="lantern" cx="6" cy="-4" r="2.2"/>':''}</g>`;
+  [[0,true,16,470,700],[-6,false,19,905,742],[-11,true,22,470,700],[-14,false,17,905,742]].forEach(([d,l,dur,from,to],i) =>
+    square += `<g class="walker" style="--from:${from}px;--to:${to}px;animation-duration:${dur}s;animation-delay:${d}s"><g transform="translate(0 ${484+(i%2)*3})" fill="#120307">${person(l)}</g></g>`);
+
+  // river with the cathedral mirrored in it
+  let river = `<rect x="0" y="490" width="${W}" height="110" fill="url(#river)"/>
+    <g clip-path="url(#riverclip)"><g class="refl" transform="matrix(1 0 0 -1 0 980)" filter="url(#rblur)"><use href="#domshape" fill="url(#flood)"/><use href="#domwins"/></g></g>`;
+  for(let i=0;i<46;i++){ const rx = R()*W, ry = 500+R()*90, rw = 14+R()*40; river += `<rect class="ripple" x="${rx.toFixed(0)}" y="${ry.toFixed(0)}" width="${rw.toFixed(0)}" height="2" rx="1" style="animation-delay:${(-R()*4).toFixed(2)}s"/>`; }
+
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Fulda am Abend: der Dom, die Altstadt und die Fulda, Illustration">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16040A"/><stop offset=".5" stop-color="#3A0814"/><stop offset=".8" stop-color="#7A0C20"/><stop offset="1" stop-color="#C8102E"/></linearGradient>
+      <linearGradient id="sunset" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C8102E" stop-opacity="0"/><stop offset=".45" stop-color="#C8102E" stop-opacity=".8"/><stop offset=".72" stop-color="#E8455A"/><stop offset="1" stop-color="#FFB3B0"/></linearGradient>
+      <linearGradient id="flood" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".82"/><stop offset=".55" stop-color="#FFE6EA" stop-opacity=".32"/><stop offset="1" stop-color="#FFE6EA" stop-opacity="0"/></linearGradient>
+      <radialGradient id="halo"><stop offset="0" stop-color="#FFD6DC" stop-opacity=".5"/><stop offset="1" stop-color="#FFD6DC" stop-opacity="0"/></radialGradient>
+      <linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A0811"/><stop offset="1" stop-color="#120307"/></linearGradient>
+      <linearGradient id="mistg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2B8C0" stop-opacity="0"/><stop offset=".5" stop-color="#F2B8C0" stop-opacity=".14"/><stop offset="1" stop-color="#F2B8C0" stop-opacity="0"/></linearGradient>
+      <linearGradient id="shootg"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient>
+      <mask id="moonm"><rect x="1150" y="70" width="90" height="90" fill="#fff"/><circle cx="1203" cy="102" r="28" fill="#000"/></mask>
+      <clipPath id="riverclip"><rect x="0" y="490" width="${W}" height="110"/></clipPath>
+      <filter id="wglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="rblur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.2 4"/></filter>
+      <g id="domshape">${domShape}</g>
+      <g id="domwins">${domWins}</g>
+    </defs>
+    <rect width="${W}" height="${H}" fill="url(#sky)"/>
+    <rect class="sunset" width="${W}" height="460" fill="url(#sunset)"/>
+    <g class="ly ly-stars" data-p="-46">${stars}</g>
+    <g class="ly ly-hills" data-p="-24">${hills}</g>
+    <g class="ly ly-back" data-p="-12">${back}</g>
+    <g class="ly ly-dom" data-p="0">
+      <ellipse class="halo" cx="720" cy="300" rx="230" ry="190" fill="url(#halo)"/>
+      <use href="#domshape" fill="#3A0B18"/>${domDetail}
+      <use class="flood" href="#domshape" fill="url(#flood)"/>
+      <use href="#domwins"/>
+      <circle class="lantern-glow" cx="720" cy="146" r="18" fill="url(#halo)"/>
+    </g>
+    <g class="ly ly-front" data-p="10">${square}${front}</g>
+    ${river}
+    <rect class="mist" x="-200" y="452" width="${W+400}" height="70" fill="url(#mistg)"/>
+    <line class="shoot" x1="0" y1="0" x2="90" y2="0" stroke="url(#shootg)" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
 }
 let duskDone = false;
 function lightDusk(){
   if(duskDone) return; duskDone = true;
-  const ws = $$('#dusk-scene .win'); const order = ws.map((w,i)=>i).sort(() => Math.random()-.5).slice(0, Math.round(ws.length*.72));
+  const scene = $('#dusk-scene'); const svg = scene.querySelector('svg'); svg.classList.add('go');
+  // the light spreads from the cathedral into the town
+  const ws = $$('#dusk-scene .win').filter(w => !w.closest('defs'));
+  const domWs = $$('#domwins .win');
+  const town = ws.map(w => ({w, d: Math.hypot(+w.dataset.x-DOM_X, (+w.dataset.y-DOM_Y)*1.4) + Math.random()*90}))
+    .filter((o,i) => (i*7919 % 100) < 70).sort((a,b) => a.d-b.d);
   const cnt = $('#dusk-count'); let n = 0;
-  if(reduced()){ order.forEach(i => ws[i].classList.add('on')); cnt.textContent = order.length; return; }
-  order.forEach((i,k) => setTimeout(() => { ws[i].classList.add('on'); cnt.textContent = ++n; }, 400 + k*38));
+  const bump = () => { cnt.textContent = ++n; };
+  if(reduced()){ domWs.forEach(w => w.classList.add('on')); town.forEach(o => o.w.classList.add('on')); cnt.textContent = town.length + domWs.length; return; }
+  domWs.forEach((w,k) => setTimeout(() => { w.classList.add('on'); bump(); }, 1900 + k*120));
+  town.forEach((o,k) => setTimeout(() => { o.w.classList.add('on'); bump(); }, 1900 + domWs.length*120 + 200 + o.d*4.2 + k*6));
+}
+function duskParallax(){
+  const sec = $('#abend'); if(!sec || reduced()) return;
+  const layers = $$('#dusk-scene .ly'); let ticking = false;
+  const run = () => { ticking = false; const r = sec.getBoundingClientRect(); if(r.bottom < 0 || r.top > innerHeight) return;
+    const p = (innerHeight - r.top) / (innerHeight + r.height) - .5;
+    layers.forEach(l => l.style.transform = `translateY(${(p * +l.dataset.p * 1.6).toFixed(1)}px)`); };
+  addEventListener('scroll', () => { if(!ticking){ ticking = true; requestAnimationFrame(run); } }, {passive:true}); run();
 }
 
 function renderLanding(){
@@ -1809,7 +1913,7 @@ window.addEventListener('scroll', () => $('#nav').classList.toggle('scrolled', s
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', applyTheme);
 
 /* ================= boot ================= */
-$('#dusk-scene').innerHTML = duskScene().svg;
+$('#dusk-scene').innerHTML = duskScene(); duskParallax();
 applyStatic(); applyTheme(); renderLanding(); initLandingObservers(); route();
 // one orchestrated moment: the flames light up to the default time
 (function intro(){
