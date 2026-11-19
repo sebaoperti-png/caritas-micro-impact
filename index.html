@@ -487,6 +487,9 @@ body.in-app #app{display:block}
 
 /* leaflet tweaks */
 .leaflet-container{font-family:var(--text);background:var(--stone)}
+.leaflet-tile-pane{filter:grayscale(.85) contrast(.92) brightness(1.04)}
+:root[data-theme="dark"] .leaflet-tile-pane{filter:grayscale(1) invert(1) contrast(.85) brightness(.85)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:grayscale(1) invert(1) contrast(.85) brightness(.85)}}
 .pin{width:30px;height:30px;border-radius:50% 50% 50% 0;background:var(--red);transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.3);transition:transform .2s}
 .pin.active{transform:rotate(-45deg) scale(1.3);background:var(--ink)}
 .leaflet-popup-content{margin:12px 14px;font-size:15px}
@@ -1199,8 +1202,8 @@ const maps = {};
 function setTiles(entry){
   if(!entry || !entry.map || !window.L) return;
   if(entry.tiles) entry.map.removeLayer(entry.tiles);
-  const style = effectiveDark() ? 'dark_all' : 'light_all';
-  entry.tiles = window.L.tileLayer(`https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png`, {maxZoom:19, attribution:'&copy; OpenStreetMap, &copy; CARTO'}).addTo(entry.map);
+  // OpenStreetMap tiles: free, no API key. Colours are toned to the site with CSS (.leaflet-tile-pane).
+  entry.tiles = window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(entry.map);
 }
 function makeMap(el, key, tasks, onPick){
   if(!window.L || !el) return null;

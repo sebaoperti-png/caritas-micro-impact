@@ -8,7 +8,7 @@ Student project, Corporate Social Responsibility course, International Business 
 - `src/`: the source parts. Edit these, then run `./build.sh` to rebuild `index.html` (it inlines the Caritas and Hochschule Fulda logos from `../guidelines/`).
 
 ## Map
-The map uses Leaflet with OpenStreetMap / CARTO tiles. **No API key is needed.** It works as soon as the page is served over http(s), for example on GitHub Pages.
+The map uses Leaflet with the standard OpenStreetMap tiles (greyed with CSS). **No API key is needed.** It works as soon as the page is served over http(s), for example on GitHub Pages.
 
 ## Demo mode
 `index.html?demo` opens the app with a sample profile already in use (minutes, badges, a booking), handy for presentations.
